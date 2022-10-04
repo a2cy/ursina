@@ -81,7 +81,7 @@ class Window(WindowProperties):
         self.render_mode = 'default'
         self.editor_ui = None
 
-        base.accept('aspectRatioChanged', self.update_aspect_ratio)
+        application.base.accept('aspectRatioChanged', self.update_aspect_ratio)
         if self.always_on_top:
             self.setZOrder(WindowProperties.Z_top)
 
@@ -189,7 +189,7 @@ class Window(WindowProperties):
         self.aspect_ratio = self.size[0] / self.size[1]
 
         from ursina import camera, window, application
-        value = [int(e) for e in base.win.getSize()]
+        value = [int(e) for e in application.base.win.getSize()]
         camera.set_shader_input('window_size', value)
 
         print_info('changed aspect ratio:', round(prev_aspect, 3), '->', round(self.aspect_ratio, 3))
@@ -200,7 +200,7 @@ class Window(WindowProperties):
 
         if camera.orthographic:
             camera.orthographic_lens.set_film_size(camera.fov * window.aspect_ratio, camera.fov)
-            base.cam.node().set_lens(camera.orthographic_lens)
+            application.base.cam.node().set_lens(camera.orthographic_lens)
 
 
     @property
@@ -212,13 +212,13 @@ class Window(WindowProperties):
         # print('set window position:', value)
         self._position = value
         self.setOrigin(int(value[0]), int(value[1]))
-        base.win.request_properties(self)
+        application.base.win.request_properties(self)
 
 
     @property
     def size(self):
         if not self.borderless:
-            return Vec2(*base.win.getSize())
+            return Vec2(*application.base.win.getSize())
         return self._size
 
     @size.setter
@@ -231,7 +231,7 @@ class Window(WindowProperties):
         self.aspect_ratio = value[0] / value[1]
         from ursina import camera
         camera.set_shader_input('window_size', value)
-        base.win.request_properties(self)
+        application.base.win.request_properties(self)
 
     @property
     def forced_aspect_ratio(self):
@@ -257,7 +257,7 @@ class Window(WindowProperties):
     def render_mode(self, value):
         self._render_mode = value
         # print('render mode:', value)
-        base.wireframeOff()
+        application.base.wireframeOff()
 
         # disable collision display mode
         if hasattr(self, 'original_colors'):
@@ -270,7 +270,7 @@ class Window(WindowProperties):
             e.setShaderAuto()
 
         if value == 'wireframe':
-            base.wireframeOn()
+            application.base.wireframeOn()
 
         elif value == 'colliders':
             self.original_colors = [e.color for e in scene.entities if hasattr(e, 'color')]
@@ -347,14 +347,14 @@ class Window(WindowProperties):
             if hasattr(self, 'exit_button'):
                 self.exit_button.enabled = not value
             try:
-                base.win.request_properties(self)
+                application.base.win.request_properties(self)
             except:
                 pass
             object.__setattr__(self, name, value)
 
 
         if name == 'color':
-            base.camNode.get_display_region(0).get_window().set_clear_color(value)
+            application.base.camNode.get_display_region(0).get_window().set_clear_color(value)
 
         if name == 'vsync':
 

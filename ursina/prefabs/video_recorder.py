@@ -30,7 +30,7 @@ class VideoRecorder(Entity):
         self.max_frames = self.duration * self.fps
         if not self.file_path.exists():
             self.file_path.mkdir()
-        base.movie(namePrefix=f'\\video_temp\\{self.video_name}', duration=2.0, fps=30, format='png', sd=4)
+        application.base.movie(namePrefix=f'\\video_temp\\{self.video_name}', duration=2.0, fps=30, format='png', sd=4)
 
         self.recording = True
         invoke(self.stop_recording, delay=self.duration)
@@ -50,7 +50,7 @@ class VideoRecorder(Entity):
 
             self.t += time.dt
             if self.t >= 1/30:
-                base.screenshot(
+                application.base.screenshot(
                  	namePrefix = '\\video_temp\\' + self.video_name + '_' + str(self.i).zfill(4) + '.png',
                  	defaultFilename = 0,
                     )

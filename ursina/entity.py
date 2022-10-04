@@ -582,34 +582,34 @@ class Entity(NodePath):
 
     @property
     def world_scale(self):
-        return Vec3(*self.getScale(base.render))
+        return Vec3(*self.getScale(application.base.render))
     @world_scale.setter
     def world_scale(self, value):
         if isinstance(value, (int, float, complex)):
             value = Vec3(value, value, value)
 
-        self.setScale(base.render, value)
+        self.setScale(application.base.render, value)
 
     @property
     def world_scale_x(self):
-        return self.getScale(base.render)[0]
+        return self.getScale(application.base.render)[0]
     @world_scale_x.setter
     def world_scale_x(self, value):
-        self.setScale(base.render, Vec3(value, self.world_scale_y, self.world_scale_z))
+        self.setScale(application.base.render, Vec3(value, self.world_scale_y, self.world_scale_z))
 
     @property
     def world_scale_y(self):
-        return self.getScale(base.render)[1]
+        return self.getScale(application.base.render)[1]
     @world_scale_y.setter
     def world_scale_y(self, value):
-        self.setScale(base.render, Vec3(self.world_scale_x, value, self.world_scale_z))
+        self.setScale(application.base.render, Vec3(self.world_scale_x, value, self.world_scale_z))
 
     @property
     def world_scale_z(self):
-        return self.getScale(base.render)[2]
+        return self.getScale(application.base.render)[2]
     @world_scale_z.setter
     def world_scale_z(self, value):
-        self.setScale(base.render, Vec3(self.world_scale_x, self.world_scale_y, value))
+        self.setScale(application.base.render, Vec3(self.world_scale_x, self.world_scale_y, value))
 
     @property
     def scale(self):
@@ -871,7 +871,7 @@ class Entity(NodePath):
         _name = 'textures/' + name + '.jpg'
         org_pos = camera.position
         camera.position = self.position
-        base.saveSphereMap(_name, size=size)
+        application.base.saveSphereMap(_name, size=size)
         camera.position = org_pos
 
         # print('saved sphere map:', name)
@@ -884,7 +884,7 @@ class Entity(NodePath):
         _name = 'textures/' + name
         org_pos = camera.position
         camera.position = self.position
-        base.saveCubeMap(_name+'.jpg', size=size)
+        application.base.saveCubeMap(_name+'.jpg', size=size)
         camera.position = org_pos
 
         # print('saved cube map:', name + '.jpg')
