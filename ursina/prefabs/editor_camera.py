@@ -19,6 +19,7 @@ class EditorCamera(Entity):
         self.rotation_smoothing = 0
         self.look_at = self.smoothing_helper.look_at
         self.look_at_2d = self.smoothing_helper.look_at_2d
+        self.rotate_key = 'right mouse'
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -102,7 +103,11 @@ class EditorCamera(Entity):
 
 
     def update(self):
-        if mouse.right:
+        if held_keys['gamepad right stick y'] or held_keys['gamepad right stick x']:
+            self.smoothing_helper.rotation_x -= held_keys['gamepad right stick y'] * self.rotation_speed / 100
+            self.smoothing_helper.rotation_y += held_keys['gamepad right stick x'] * self.rotation_speed / 100
+
+        elif held_keys[self.rotate_key]:
             self.smoothing_helper.rotation_x -= mouse.velocity[1] * self.rotation_speed
             self.smoothing_helper.rotation_y += mouse.velocity[0] * self.rotation_speed
 
@@ -168,7 +173,7 @@ if __name__ == '__main__':
     box = Entity(model='cube', collider='box', texture='white_cube', scale=(10,2,2), position=(2,1,5), color=color.light_gray)
     player = FirstPersonController(y=1, enabled=True)
 
-    ec = EditorCamera(rotation_smoothing=3)
+    ec = EditorCamera()
     ec.enabled = False
     rotation_info = Text(position=window.top_left)
 

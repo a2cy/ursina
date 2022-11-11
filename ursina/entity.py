@@ -684,12 +684,13 @@ class Entity(NodePath):
     @property
     def screen_position(self): # get screen position(ui space) from world space.
         from ursina import camera
-        p3 = camera.getRelativePoint(self, Vec3.zero())
-        full = camera.lens.getProjectionMat().xform(Vec4(*p3, 1))
-        recip_full3 = 1 / full[3]
-        p2 = Vec3(full[0], full[1], full[2]) * recip_full3
-        screen_pos = Vec3(p2[0]*camera.aspect_ratio/2, p2[1]/2, 0)
-        return screen_pos
+        p3d = camera.getRelativePoint(self, Vec3.zero())
+        full = camera.lens.getProjectionMat().xform(Vec4(*p3d, 1))
+        recip_full3 = 1
+        if full[3] > 0:
+            recip_full3 = 1 / full[3]
+        p2d = full * recip_full3
+        return Vec2(p2d[0]*camera.aspect_ratio/2, p2d[1]/2)
 
     @property
     def shader(self):
@@ -1062,7 +1063,7 @@ class Entity(NodePath):
             attr = getattr(self, key)
 
 
-            if hasattr(attr, 'name'):
+            if hasattr(attr, 'name') and attr.name:
                 attr = attr.name
                 if '.' in attr:
                     attr = attr.split('.')[0]
@@ -1071,12 +1072,16 @@ class Entity(NodePath):
             if attr == target_class.default_values[key]:
                 continue
 
-            print('attr changed:', key, 'from:', target_class.default_values[key], 'to:', attr)
-            if isinstance(attr, str):
-                attr = f"'{attr}'"
-
+            # print('attr changed:', key, 'from:', target_class.default_values[key], 'to:', attr)
             if key == 'color':
-                attr = f'color.{attr[1:-1]}'
+                if isinstance(attr, str):
+                    if not attr.startswith('#'):
+                        attr = f'color.{attr}'
+                elif isinstance(attr, Color):
+                    attr = f"'{color.rgb_to_hex(*attr)}'"
+
+            elif isinstance(attr, str):
+                attr = f"'{attr}'"
 
             if attr == "'mesh'":
                 continue
@@ -1163,19 +1168,20 @@ class Entity(NodePath):
         '''))
 
 
-    def shake(self, duration=.2, magnitude=1, speed=.05, direction=(1,1)):
+    def shake(self, duration=.2, magnitude=1, speed=.05, direction=(1,1), delay=0, attr_name='world_position'):
         import random
-        s = Sequence()
-        original_position = self.world_position
+        s = Sequence(Wait(delay))
+        original_position = getattr(self, attr_name)
+
         for i in range(int(duration / speed)):
-            s.append(Func(self.set_position,
+            s.append(Func(setattr, self, attr_name,
                 Vec3(
                     original_position[0] + (random.uniform(-.1, .1) * magnitude * direction[0]),
                     original_position[1] + (random.uniform(-.1, .1) * magnitude * direction[1]),
                     original_position[2],
                 )))
             s.append(Wait(speed))
-            s.append(Func(setattr, self, 'world_position', original_position))
+            s.append(Func(setattr, self, attr_name, original_position))
 
         self.animations.append(s)
         s.start()
@@ -1303,7 +1309,7 @@ if __name__ == '__main__':
 
 
     # test
-    e = Entity(model='cube', collider='box', texture='shore')
+    e = Entity(model='cube', collider='box', texture='shore', color=hsv(.3,1,.5))
     print(repr(e))
 
     # e.animate_x(3, duration=2, delay=.5, loop=True)
