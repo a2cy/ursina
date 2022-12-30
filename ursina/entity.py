@@ -10,6 +10,7 @@ from panda3d.core import Quat
 from panda3d.core import TransparencyAttrib
 from panda3d.core import Shader
 from panda3d.core import TextureStage, TexGenAttrib
+
 from ursina.texture import Texture
 from panda3d.core import MovieTexture
 from panda3d.core import TextureStage
@@ -30,7 +31,6 @@ from panda3d.core import Shader as Panda3dShader
 from ursina import shader
 from ursina.shader import Shader
 from ursina.string_utilities import print_info, print_warning
-from ursina.string_utilities import print_warning
 from ursina.ursinamath import Bounds
 
 from ursina import color
@@ -580,44 +580,36 @@ class Entity(NodePath):
     def quaternion(self, value):
         self.set_quat(value)
 
-        @property
+    @property
     def world_scale(self):
         return Vec3(*self.getScale(application.base.render))
-        return Vec3(*self.getScale(base.render))
     @world_scale.setter
     def world_scale(self, value):
         if isinstance(value, (int, float, complex)):
             value = Vec3(value, value, value)
 
         self.setScale(application.base.render, value)
-        self.setScale(base.render, value)
 
     @property
     def world_scale_x(self):
         return self.getScale(application.base.render)[0]
-        return self.getScale(base.render)[0]
     @world_scale_x.setter
     def world_scale_x(self, value):
         self.setScale(application.base.render, Vec3(value, self.world_scale_y, self.world_scale_z))
-        self.setScale(base.render, Vec3(value, self.world_scale_y, self.world_scale_z))
 
     @property
     def world_scale_y(self):
         return self.getScale(application.base.render)[1]
-        return self.getScale(base.render)[1]
     @world_scale_y.setter
     def world_scale_y(self, value):
         self.setScale(application.base.render, Vec3(self.world_scale_x, value, self.world_scale_z))
-        self.setScale(base.render, Vec3(self.world_scale_x, value, self.world_scale_z))
 
     @property
     def world_scale_z(self):
         return self.getScale(application.base.render)[2]
-        return self.getScale(base.render)[2]
     @world_scale_z.setter
     def world_scale_z(self, value):
         self.setScale(application.base.render, Vec3(self.world_scale_x, self.world_scale_y, value))
-        self.setScale(base.render, Vec3(self.world_scale_x, self.world_scale_y, value))
 
     @property
     def scale(self):
