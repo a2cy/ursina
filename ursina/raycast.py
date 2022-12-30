@@ -7,7 +7,7 @@ from panda3d.core import CollisionTraverser, CollisionNode, CollisionHandlerQueu
 from ursina.vec3 import Vec3
 from math import sqrt, inf
 from ursina.hit_info import HitInfo
-from ursina import ursinamath, color
+from ursina import ursinamath, color, application
 from ursina.ursinastuff import destroy, invoke
 
 
