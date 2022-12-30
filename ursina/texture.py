@@ -25,7 +25,6 @@ class Texture():
 
         elif isinstance(value, PandaTexture):
             self._texture = value
-            self._cached_image = None
 
         else:
             from PIL import Image
