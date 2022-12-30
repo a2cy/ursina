@@ -72,7 +72,7 @@ def combine(combine_parent, analyze=False, auto_destroy=True, ignore=[]):
     # entity.model = Mesh(vertices=verts,  mode='triangle')
     # entity.flatten_strong()
     if analyze:
-        render.analyze()
+        application.base.render.analyze()
     return combine_parent.model
 
 
