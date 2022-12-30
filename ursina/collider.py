@@ -1,4 +1,4 @@
-from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, CollisionPolygon
+from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, CollisionCapsule, CollisionPolygon
 from panda3d.core import NodePath
 from ursina.vec3 import Vec3
 from ursina.mesh import Mesh
@@ -49,6 +49,16 @@ class SphereCollider(Collider):
         self.node_path = entity.attachNewNode(CollisionNode('CollisionNode'))
         self.node_path.node().addSolid(self.shape)
         self.visible = False
+
+
+
+class CapsuleCollider(Collider):
+    def __init__(self, entity, center=(0,0,0), height=2, radius=.5):
+        super().__init__()
+        self.shape = CollisionCapsule(center[0], center[1] + radius, center[2], center[0], center[1] + height, center[2], radius)
+        self.node_path = entity.attachNewNode(CollisionNode('CollisionNode'))
+        self.node_path.node().addSolid(self.shape)
+        self.visible = True
 
 
 class MeshCollider(Collider):

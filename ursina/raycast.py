@@ -50,7 +50,7 @@ def raycast(origin, direction=(0,0,1), distance=inf, traverse_target=scene, igno
     _raycaster.entries = [        # filter out ignored entities
         e for e in _raycaster._pq.getEntries()
         if e.get_into_node_path().parent not in ignore
-        and ursinamath.distance(_raycaster.world_position, Vec3(*e.get_surface_point(render))) <= distance
+        and ursinamath.distance(_raycaster.world_position, Vec3(*e.get_surface_point(application.base.render))) <= distance
         ]
 
     if len(_raycaster.entries) == 0:
@@ -60,7 +60,7 @@ def raycast(origin, direction=(0,0,1), distance=inf, traverse_target=scene, igno
     _raycaster.collision = _raycaster.entries[0]
     nP = _raycaster.collision.get_into_node_path().parent
     point = Vec3(*_raycaster.collision.get_surface_point(nP))
-    world_point = Vec3(*_raycaster.collision.get_surface_point(render))
+    world_point = Vec3(*_raycaster.collision.get_surface_point(application.base.render))
     hit_dist = ursinamath.distance(_raycaster.world_position, world_point)
 
 
@@ -77,7 +77,7 @@ def raycast(origin, direction=(0,0,1), distance=inf, traverse_target=scene, igno
     _raycaster.hit.distance = hit_dist
 
     _raycaster.hit.normal = Vec3(*_raycaster.collision.get_surface_normal(_raycaster.collision.get_into_node_path().parent).normalized())
-    _raycaster.hit.world_normal = Vec3(*_raycaster.collision.get_surface_normal(render).normalized())
+    _raycaster.hit.world_normal = Vec3(*_raycaster.collision.get_surface_normal(application.base.render).normalized())
     return _raycaster.hit
 
     _raycaster.hit = HitInfo(hit=False, distance=distance)

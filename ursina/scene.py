@@ -21,7 +21,7 @@ class Scene(NodePath):
 
 
     def set_up(self):
-        self.reparent_to(render)
+        self.reparent_to(application.base.render)
         self.reflection_map = load_texture(self.reflection_map_name)
         self.fog = Fog('fog')
         self.setFog(self.fog)

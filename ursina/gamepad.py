@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
 
 input_handler.gamepad = None
-input_handler.gamepads = application.base.devices.getDevices(InputDevice.DeviceClass.gamepad)
+input_handler.gamepads = base.devices.getDevices(InputDevice.DeviceClass.gamepad)
 if input_handler.gamepads:
     input_handler.gamepad = input_handler.gamepads[0]
 
@@ -29,7 +29,7 @@ for i, gamepad in enumerate(input_handler.gamepads):
     if i > 0:
         gamepad_name += f'_{i}'
 
-    application.base.attachInputDevice(gamepad, prefix=gamepad_name)
+    base.attachInputDevice(gamepad, prefix=gamepad_name)
     buttons = {
         'face_a' : 'a',
         'face_b' : 'b',
@@ -48,8 +48,8 @@ for i, gamepad in enumerate(input_handler.gamepads):
     }
 
     for original_name, new_name in buttons.items():
-        application.base.accept(f'{gamepad_name}-{original_name}', application.base.input, extraArgs=[f'{gamepad_name} {new_name}'])
-        application.base.accept(f'{gamepad_name}-{original_name}-up', application.base.input, extraArgs=[f'{gamepad_name} {new_name} up'])
+        base.accept(f'{gamepad_name}-{original_name}', base.input, extraArgs=[f'{gamepad_name} {new_name}'])
+        base.accept(f'{gamepad_name}-{original_name}-up', base.input, extraArgs=[f'{gamepad_name} {new_name} up'])
         # print(original_name, new_name)
 
 def update():

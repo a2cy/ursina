@@ -1,12 +1,8 @@
-import sys
-import importlib
-import glob
 from pathlib import Path
 from panda3d.core import NodePath
 from ursina.vec2 import Vec2
 from ursina.vec3 import Vec3
 from ursina.vec4 import Vec4
-from panda3d.core import Quat
 from panda3d.core import TransparencyAttrib
 from panda3d.core import Shader
 from panda3d.core import TextureStage, TexGenAttrib
@@ -21,8 +17,6 @@ from ursina.mesh import Mesh
 from ursina.sequence import Sequence, Func, Wait
 from ursina.ursinamath import lerp
 from ursina import curve
-from ursina.curve import CubicBezier
-from ursina import mesh_importer
 from ursina.mesh_importer import load_model
 from ursina.texture_importer import load_texture
 from ursina.string_utilities import camel_to_snake
@@ -30,7 +24,7 @@ from textwrap import dedent
 from panda3d.core import Shader as Panda3dShader
 from ursina import shader
 from ursina.shader import Shader
-from ursina.string_utilities import print_info, print_warning
+from ursina.string_utilities import print_warning
 from ursina.ursinamath import Bounds
 
 from ursina import color
@@ -370,6 +364,10 @@ class Entity(NodePath):
             self._collider = SphereCollider(entity=self, center=-self.origin)
             self._collider.name = value
 
+        elif value == 'capsule':
+            self._collider = CapsuleCollider(entity=self, center=-self.origin)
+            self._collider.name = value
+
         elif value == 'mesh' and self.model:
             self._collider = MeshCollider(entity=self, mesh=None, center=-self.origin)
             self._collider.name = value
@@ -430,7 +428,7 @@ class Entity(NodePath):
 
     @property
     def world_position(self):
-        return Vec3(self.get_position(render))
+        return Vec3(self.get_position(application.base.render))
 
     @world_position.setter
     def world_position(self, value):
@@ -439,27 +437,27 @@ class Entity(NodePath):
         if isinstance(value, Vec2):
             value = Vec3(*value, self.z)
 
-        self.setPos(render, Vec3(value[0], value[1], value[2]))
+        self.setPos(application.base.render, Vec3(value[0], value[1], value[2]))
 
     @property
     def world_x(self):
-        return self.getX(render)
+        return self.getX(application.base.render)
     @property
     def world_y(self):
-        return self.getY(render)
+        return self.getY(application.base.render)
     @property
     def world_z(self):
-        return self.getZ(render)
+        return self.getZ(application.base.render)
 
     @world_x.setter
     def world_x(self, value):
-        self.setX(render, value)
+        self.setX(application.base.render, value)
     @world_y.setter
     def world_y(self, value):
-        self.setY(render, value)
+        self.setY(application.base.render, value)
     @world_z.setter
     def world_z(self, value):
-        self.setZ(render, value)
+        self.setZ(application.base.render, value)
 
     @property
     def position(self):
@@ -582,34 +580,34 @@ class Entity(NodePath):
 
     @property
     def world_scale(self):
-        return Vec3(*self.getScale(application.base.render))
+        return Vec3(*self.getScale(base.render))
     @world_scale.setter
     def world_scale(self, value):
         if isinstance(value, (int, float, complex)):
             value = Vec3(value, value, value)
 
-        self.setScale(application.base.render, value)
+        self.setScale(base.render, value)
 
     @property
     def world_scale_x(self):
-        return self.getScale(application.base.render)[0]
+        return self.getScale(base.render)[0]
     @world_scale_x.setter
     def world_scale_x(self, value):
-        self.setScale(application.base.render, Vec3(value, self.world_scale_y, self.world_scale_z))
+        self.setScale(base.render, Vec3(value, self.world_scale_y, self.world_scale_z))
 
     @property
     def world_scale_y(self):
-        return self.getScale(application.base.render)[1]
+        return self.getScale(base.render)[1]
     @world_scale_y.setter
     def world_scale_y(self, value):
-        self.setScale(application.base.render, Vec3(self.world_scale_x, value, self.world_scale_z))
+        self.setScale(base.render, Vec3(self.world_scale_x, value, self.world_scale_z))
 
     @property
     def world_scale_z(self):
-        return self.getScale(application.base.render)[2]
+        return self.getScale(base.render)[2]
     @world_scale_z.setter
     def world_scale_z(self, value):
-        self.setScale(application.base.render, Vec3(self.world_scale_x, self.world_scale_y, value))
+        self.setScale(base.render, Vec3(self.world_scale_x, self.world_scale_y, value))
 
     @property
     def scale(self):
@@ -664,19 +662,19 @@ class Entity(NodePath):
 
     @property
     def forward(self): # get forward direction.
-        return Vec3(*render.getRelativeVector(self, (0, 0, 1)))
+        return Vec3(*application.base.render.getRelativeVector(self, (0, 0, 1)))
     @property
     def back(self): # get backwards direction.
         return -self.forward
     @property
     def right(self): # get right direction.
-        return Vec3(*render.getRelativeVector(self, (1, 0, 0)))
+        return Vec3(*application.base.render.getRelativeVector(self, (1, 0, 0)))
     @property
     def left(self): # get left direction.
         return -self.right
     @property
     def up(self): # get up direction.
-        return Vec3(*render.getRelativeVector(self, (0, 1, 0)))
+        return Vec3(*application.base.render.getRelativeVector(self, (0, 1, 0)))
     @property
     def down(self): # get down direction.
         return -self.up
@@ -872,7 +870,7 @@ class Entity(NodePath):
         _name = 'textures/' + name + '.jpg'
         org_pos = camera.position
         camera.position = self.position
-        application.base.saveSphereMap(_name, size=size)
+        base.saveSphereMap(_name, size=size)
         camera.position = org_pos
 
         # print('saved sphere map:', name)
@@ -885,7 +883,7 @@ class Entity(NodePath):
         _name = 'textures/' + name
         org_pos = camera.position
         camera.position = self.position
-        application.base.saveCubeMap(_name+'.jpg', size=size)
+        base.saveCubeMap(_name+'.jpg', size=size)
         camera.position = org_pos
 
         # print('saved cube map:', name + '.jpg')
@@ -1253,7 +1251,7 @@ class Entity(NodePath):
         nP = collision.get_into_node_path().parent
         point = collision.get_surface_point(nP)
         point = Vec3(*point)
-        world_point = collision.get_surface_point(render)
+        world_point = collision.get_surface_point(application.base.render)
         world_point = Vec3(*world_point)
         hit_dist = distance(self.world_position, world_point)
 
@@ -1267,7 +1265,7 @@ class Entity(NodePath):
         normal = collision.get_surface_normal(collision.get_into_node_path().parent).normalized()
         self.hit.normal = Vec3(*normal)
 
-        normal = collision.get_surface_normal(render).normalized()
+        normal = collision.get_surface_normal(application.base.render).normalized()
         self.hit.world_normal = Vec3(*normal)
 
         self.hit.entities = []

@@ -24,7 +24,7 @@ class DirectionalLight(Light):
     def __init__(self, shadows=True, **kwargs):
         super().__init__()
         self._light = PandaDirectionalLight('directional_light')
-        render.setLight(self.attachNewNode(self._light))
+        application.base.render.setLight(self.attachNewNode(self._light))
         self.shadow_map_resolution = Vec2(1024, 1024)
 
         for key, value in kwargs.items():
@@ -59,7 +59,7 @@ class PointLight(Light):
     def __init__(self, **kwargs):
         super().__init__()
         self._light = PandaPointLight('point_light')
-        render.setLight(self.attachNewNode(self._light))
+        application.base.render.setLight(self.attachNewNode(self._light))
 
         for key, value in kwargs.items():
             setattr(self, key ,value)
@@ -70,7 +70,7 @@ class AmbientLight(Light):
     def __init__(self, **kwargs):
         super().__init__()
         self._light = PandaAmbientLight('ambient_light')
-        render.setLight(self.attachNewNode(self._light))
+        application.base.render.setLight(self.attachNewNode(self._light))
 
         for key, value in kwargs.items():
             setattr(self, key ,value)
@@ -81,7 +81,7 @@ class SpotLight(Light):
     def __init__(self, **kwargs):
         super().__init__()
         self._light = PandaSpotLight('spot_light')
-        render.setLight(self.attachNewNode(self._light))
+        application.base.render.setLight(self.attachNewNode(self._light))
 
         for key, value in kwargs.items():
             setattr(self, key ,value)
