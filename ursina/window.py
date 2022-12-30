@@ -81,7 +81,7 @@ class Window(WindowProperties):
         self.render_mode = 'default'
         self.editor_ui = None
 
-        base.accept('aspectRatioChanged', self.update_aspect_ratio)
+        application.base.accept('aspectRatioChanged', self.update_aspect_ratio)
         if self.always_on_top:
             self.setZOrder(WindowProperties.Z_top)
 
@@ -155,7 +155,7 @@ class Window(WindowProperties):
         import webbrowser
         self.cog_menu = ButtonList({
             # 'Build' : Func(print, ' '),
-            'API Reference' : Func(webbrowser.open, 'https://www.ursinaengine.org/cheat_sheet_dark.html'),
+            'API Reference' : Func(webbrowser.open, 'https://www.ursinaengine.org/api_reference.html'),
             # 'Asset Store' : Func(webbrowser.open, 'https://itch.io/tools/tag-ursina'),
             'ursfx (Sound Effect Maker)' : lambda: exec('from ursina.prefabs import ursfx; ursfx.gui.enabled = True'),
             # 'Open Scene Editor' : Func(print, ' '),
@@ -170,11 +170,12 @@ class Window(WindowProperties):
             width=.35, x=.62, enabled=False, eternal=True, name='cog_menu',
         )
         self.cog_menu.on_click = Func(setattr, self.cog_menu, 'enabled', False)
-        self.cog_menu.y = -.5 + self.cog_menu.scale_y
+        print(self.cog_menu.scale_y)
         self.cog_menu.scale *= .75
         self.cog_menu.text_entity.x += .025
         self.cog_menu.highlight.color = color.azure
         self.cog_button = Button(parent=self.editor_ui, eternal=True, model='quad', texture='cog', scale=.015, origin=(1,-1), position=self.bottom_right, name='cog_button')
+        self.cog_menu.y = self.cog_button.y + (self.cog_menu.bg.scale_y * self.cog_menu.scale_y) + Text.size
         info_text ='''This menu is not enabled in builds <gray>(unless you set application.development_mode to be not False).'''
         self.cog_menu.info = Button(parent=self.cog_menu, model='quad', text='<gray>?', scale=.1, x=1, y=.01, origin=(.5,-.5), tooltip=Tooltip(info_text, scale=.75, origin=(-.5,-.5), eternal=True), eternal=True, name='cog_menu_info')
         self.cog_menu.info.text_entity.scale *= .75
@@ -189,7 +190,7 @@ class Window(WindowProperties):
         self.aspect_ratio = self.size[0] / self.size[1]
 
         from ursina import camera, window, application
-        value = [int(e) for e in base.win.getSize()]
+        value = [int(e) for e in application.base.win.getSize()]
         camera.set_shader_input('window_size', value)
 
         print_info('changed aspect ratio:', round(prev_aspect, 3), '->', round(self.aspect_ratio, 3))
@@ -200,7 +201,7 @@ class Window(WindowProperties):
 
         if camera.orthographic:
             camera.orthographic_lens.set_film_size(camera.fov * window.aspect_ratio, camera.fov)
-            base.cam.node().set_lens(camera.orthographic_lens)
+            application.base.cam.node().set_lens(camera.orthographic_lens)
 
 
     @property
@@ -212,13 +213,13 @@ class Window(WindowProperties):
         # print('set window position:', value)
         self._position = value
         self.setOrigin(int(value[0]), int(value[1]))
-        base.win.request_properties(self)
+        application.base.win.request_properties(self)
 
 
     @property
     def size(self):
         if not self.borderless:
-            return Vec2(*base.win.getSize())
+            return Vec2(*application.base.win.getSize())
         return self._size
 
     @size.setter
@@ -231,7 +232,7 @@ class Window(WindowProperties):
         self.aspect_ratio = value[0] / value[1]
         from ursina import camera
         camera.set_shader_input('window_size', value)
-        base.win.request_properties(self)
+        application.base.win.request_properties(self)
 
     @property
     def forced_aspect_ratio(self):
@@ -257,7 +258,7 @@ class Window(WindowProperties):
     def render_mode(self, value):
         self._render_mode = value
         # print('render mode:', value)
-        base.wireframeOff()
+        application.base.wireframeOff()
 
         # disable collision display mode
         if hasattr(self, 'original_colors'):
@@ -270,7 +271,7 @@ class Window(WindowProperties):
             e.setShaderAuto()
 
         if value == 'wireframe':
-            base.wireframeOn()
+            application.base.wireframeOn()
 
         elif value == 'colliders':
             self.original_colors = [e.color for e in scene.entities if hasattr(e, 'color')]
@@ -347,14 +348,14 @@ class Window(WindowProperties):
             if hasattr(self, 'exit_button'):
                 self.exit_button.enabled = not value
             try:
-                base.win.request_properties(self)
+                application.base.win.request_properties(self)
             except:
                 pass
             object.__setattr__(self, name, value)
 
 
         if name == 'color':
-            base.camNode.get_display_region(0).get_window().set_clear_color(value)
+            application.base.camNode.get_display_region(0).get_window().set_clear_color(value)
 
         if name == 'vsync':
 
@@ -384,7 +385,7 @@ instance = Window()
 if __name__ == '__main__':
     from ursina import *
     # application.development_mode = False
-    app = Ursina(borderless=False)
+    app = Ursina(borderless=1)
     # time.sleep(2)
     # window.forced_aspect_ratio = 1
     # window.vsync = 10
