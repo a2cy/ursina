@@ -1,7 +1,7 @@
 import sys
 from panda3d.core import NodePath
 from panda3d.core import Fog
-from ursina import color
+from ursina import color, application
 from ursina.texture_importer import load_texture
 
 
