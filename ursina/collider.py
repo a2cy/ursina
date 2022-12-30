@@ -1,4 +1,4 @@
-from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, CollisionPolygon
+from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, CollisionCapsule, CollisionPolygon
 from panda3d.core import NodePath
 from ursina.vec3 import Vec3
 from ursina.mesh import Mesh
