@@ -144,7 +144,7 @@ class Window(WindowProperties):
             elif combined_key == 'f11':
                 self.fullscreen = not self.fullscreen
 
-            elif combined_key == 'f10':
+            elif combined_key == 'f10' and application.development_mode:
                 i = self.render_modes.index(self.render_mode) + 1
                 if i >= len(self.render_modes):
                     i = 0
@@ -331,7 +331,6 @@ class Window(WindowProperties):
     @render_mode.setter
     def render_mode(self, value):
         self._render_mode = value
-        # print('render mode:', value)
         base.wireframeOff()
 
         # disable collision display mode
