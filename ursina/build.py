@@ -43,6 +43,7 @@ class UrsinaBuild:
             overwrite=False,
             pyproject_path='..',
             python_version='',
+            use_cache=True,
         ):
         if not (SRC_FOLDER/entry_point).exists():
             raise Exception(f'No {(SRC_FOLDER/entry_point)} found.')
@@ -68,7 +69,7 @@ class UrsinaBuild:
 
 
 
-    def build_engine(self, overwrite=False, builds_folder='builds', build_name='', platform='Windows', python_version=''): # copies python and modules into the 'python' folder
+    def build_engine(self, overwrite=False, builds_folder='builds', build_name='', platform='Windows', python_version='', use_cache=True): # copies python and modules into the 'python' folder
         build_name = build_name if build_name else PROJECT_FOLDER.name
         into = Path(f'{builds_folder}/{build_name}_{platform}/python/')
         into.mkdir(parents=True, exist_ok=True)
@@ -79,8 +80,8 @@ class UrsinaBuild:
         if not python_version:
             python_version = py_platform.python_version()
             print(f'No python_version specified, using default: {python_version}')
-        self.copy_python(builds_folder=builds_folder, build_name=build_name, platform=platform, python_version=python_version)
-        self.copy_modules(builds_folder=builds_folder, build_name=build_name, platform=platform, python_version=python_version)
+        self.copy_python(builds_folder=builds_folder, build_name=build_name, platform=platform, python_version=python_version, use_cache=use_cache)
+        self.copy_modules(builds_folder=builds_folder, build_name=build_name, platform=platform, python_version=python_version, use_cache=use_cache)
         return self
 
 
@@ -101,6 +102,8 @@ class UrsinaBuild:
 
         build_name = build_name if build_name else PROJECT_FOLDER.name
         into = Path(f'{builds_folder}/{build_name}_{platform}/python/')
+        # if not use_cache:
+        #     shutil.rmtree(str(cache_dir))
         into.mkdir(parents=True, exist_ok=True)
 
         if isinstance(cache_dir, str):
@@ -144,17 +147,20 @@ class UrsinaBuild:
                     build_name='',
                     platform='Windows',
                     cache_dir='build_cache/wheels',
+                    use_cache=True,
                     platform_tag = 'win_amd64',
                     python_version='',
                     abi='',
                     ):
         build_name = build_name if build_name else PROJECT_FOLDER.name
-        into = Path(f'{builds_folder}/{build_name}_{platform}/python/Lib/site-packages/')
-        into.mkdir(parents=True, exist_ok=True)
+        site_packages = Path(f'{builds_folder}/{build_name}_{platform}/python/Lib/site-packages/')
+        site_packages.mkdir(parents=True, exist_ok=True)
 
         cache_dir = PROJECT_FOLDER / cache_dir
+        # if not use_cache:
+        shutil.rmtree(str(cache_dir))
         cache_dir.mkdir(parents=True, exist_ok=True)
-        print('     copy modules to:', into)
+        print('     copy modules to:', site_packages)
 
         if not python_version:
             python_version = py_platform.python_version()
@@ -166,82 +172,94 @@ class UrsinaBuild:
 
         # ensure requirements.txt exists
         # if not (PROJECT_FOLDER / 'requirements.txt').exists():
-        subprocess.run(['uv', 'pip', 'compile', 'pyproject.toml',
-                            '-o', 'requirements.txt'],
-                        capture_output=True, text=True)
+        subprocess.run(['uv', 'pip', 'compile', 'pyproject.toml', '-o', 'requirements.txt'], capture_output=True, text=True)
 
         with open(PROJECT_FOLDER / 'requirements.txt') as f:
-            packages = [line for line in f.read().split('\n')
-                        if line and not line.strip().startswith('#')]
-
+            packages = [line for line in f.read().split('\n') if line and not line.strip().startswith('#')]
         print('packages:', '\n'.join(packages))
 
 
-        pip_base = [sys.executable, '-m', 'pip', 'download']
-        pip_args = [
-            '--platform', platform_tag,
-            '--python-version', python_major_minor,
-            '--implementation', 'cp',
-            '--abi', abi,
-            '-d', str(cache_dir),  # << store wheels in cache
-        ]
-
-        success = []
-        fail = []
-
-        # Pass 1 — Try to reuse cache before downloading
         for pkg in packages:
-            cached_wheels = list(cache_dir.glob(f'{pkg.replace('-', '_')}*{python_major_minor}*.whl'))
-            if cached_wheels:
-                print(f'      Using cached wheel for {pkg}')
-                success.append(pkg)
-                continue
 
-            # detect local path: contains slash or begins with ., .., or /
-            if '/' in pkg or pkg.startswith('.'):
+            # local package
+            if Path(pkg).exists():
                 local_path = Path(pkg).resolve()
+
                 if not local_path.is_dir():
                     print(f'Skipping {local_path}, folder not found')
                     continue
 
-                result = subprocess.run(['pip', 'wheel', pkg, '-w', cache_dir])
-                if result.returncode == 0:
-                    success.append(pkg)
-                else:
-                    fail.append(pkg)
+                print('Making wheel from local package:', pkg)
 
-            print(f'      No cache for {pkg}, trying binary download')
-            result = subprocess.run(pip_base + ['--only-binary=:all:'] + pip_args + [pkg])
-            if result.returncode == 0:
-                success.append(pkg)
-            else:
-                fail.append(pkg)
+                result = subprocess.run([
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "wheel",
+                    str(local_path),
+                    "-w",
+                    str(cache_dir),
+                    "--no-deps",
+                    "--no-cache-dir"
+                ])
 
-        # Pass 2 — fallback to source wheels if binary wasn’t available
-        for pkg in fail[:]:
-            print(f'      Trying source fallback for {pkg}')
-            result = subprocess.run(pip_base + ['--no-binary=:all:'] + pip_args + [pkg])
-            if result.returncode == 0:
-                success.append(pkg)
-                fail.remove(pkg)
+                if result.returncode != 0:
+                    print("Failed building local wheel:", pkg)
 
-        if fail:
-            print(f'⚠️ Failed to download: {fail}')
-        else:
-            print('All packages downloaded successfully.')
+                continue
+
+
+            # download package
+            print("Downloading:", pkg)
+
+            result = subprocess.run([
+                sys.executable, "-m", "pip", "download",
+                "--platform", platform_tag,
+                "--python-version", python_major_minor,
+                "--implementation", "cp",
+                "--abi", abi,
+                "--only-binary=:all:",
+                "--no-deps",
+                "--no-cache-dir",
+                "-d", str(cache_dir),
+                pkg
+            ])
+
+            if result.returncode != 0:
+                print("Binary failed, trying source:", pkg)
+
+                subprocess.run([
+                    sys.executable, "-m", "pip", "download",
+                    "--platform", platform_tag,
+                    "--python-version", python_major_minor,
+                    "--implementation", "cp",
+                    "--abi", abi,
+                    "--no-binary=:all:",
+                    "--no-deps",
+                    "--no-cache-dir",
+                    "-d", str(cache_dir),
+                    pkg
+                ])
 
         print('Extracting wheels...')
 
-        # Copy from cache → into
-        for wheel in cache_dir.glob('*.whl'):
-            shutil.copy2(wheel, into / wheel.name)
+        for wheel in cache_dir.glob("*.whl"):
+            pkg_name = wheel.name.split("-")[0].replace("-", "_")
 
-        # Extract wheels
-        for wheel in into.glob('*.whl'):
-            with zipfile.ZipFile(wheel, 'r') as z:
-                z.extractall(into)   # MUST extract into site-packages
-            print(f'Extracted {wheel.name}')
-            wheel.unlink()
+            # remove old package folder
+            pkg_folder = site_packages / pkg_name
+            if pkg_folder.exists():
+                shutil.rmtree(pkg_folder)
+
+            # remove old dist-info
+            for dist in site_packages.glob(f"{pkg_name}-*.dist-info"):
+                shutil.rmtree(dist)
+
+            # extract
+            with zipfile.ZipFile(wheel, "r") as z:
+                z.extractall(site_packages)
+
+            print("Installed:", wheel.name)
 
         print('✅ Module install complete (cached+extracted).')
         return self
