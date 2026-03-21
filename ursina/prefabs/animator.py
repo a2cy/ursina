@@ -1,6 +1,6 @@
 from ursina import *
 
-
+@generate_properties_for_class()
 class Animator:
     def __init__(self, animations=None, start_state='', pause_disabled=True):
 
@@ -8,22 +8,14 @@ class Animator:
         self.pause_disabled = pause_disabled
 
         if not start_state and self.animations:
-            start_state = list(self.animations)[0]
+            start_state = list(self.animations.keys())[0]
 
         self.start_state = start_state
         self._state = None
         self.state = start_state
 
-
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, value):
-
-        if not value in self.animations:
+    def state_setter(self, value):
+        if value not in self.animations:
             print_warning(self, 'has no animation:', value)
 
         elif not self._state == value:
