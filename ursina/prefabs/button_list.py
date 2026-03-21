@@ -3,8 +3,9 @@ from math import floor
 
 
 class ButtonList(Entity):
-    def __init__(self, button_dict, button_height=1.1, width=.5, popup=False, color=Button.default_color, highlight_color=color.white33, selected_color=color.azure, font=Text.default_font, clear_selected_on_enable=True, **kwargs):
+    def __init__(self, button_dict, button_height=1.1, width=.5, popup=False, color=Button.default_color, highlight_color=color.white33, selected_color=color.azure, font=Text.default_font, clear_selected_on_enable=True, clear_selected_on_click_outside=True, **kwargs):
         self.clear_selected_on_enable = clear_selected_on_enable
+        self.clear_selected_on_click_outside = clear_selected_on_click_outside
         self.button_height = button_height
         self.width = width
         super().__init__(parent=camera.ui, position=(-(width/2), .45))
@@ -59,7 +60,7 @@ class ButtonList(Entity):
             if self.popup:
                 self.disable()
 
-        if key == 'left mouse down' and not self.bg.hovered:
+        if key == 'left mouse down' and not self.bg.hovered and self.clear_selected_on_click_outside:
             self.selection_marker.enabled = False
 
 
@@ -81,7 +82,12 @@ class ButtonList(Entity):
 
     @property
     def selected(self):
-        return getattr(self, '_selected', None)
+        if not self.selection_marker.enabled:
+            return None
+        index = int(-self.selection_marker.y * len(self.button_dict))
+        return self.button_dict.items()[index]
+
+
     @selected.setter
     def selected(self, value):
         self._selected = value
@@ -110,7 +116,7 @@ if __name__ == '__main__':
     for i in range(6, 20):
         button_dict[f'button {i}'] = Func(print, i)
 
-    bl = ButtonList(button_dict, font=Text.default_monospace_font, button_height=1.5, popup=0, clear_selected_on_enable=False)
+    bl = ButtonList(button_dict, font=Text.default_monospace_font, button_height=1.5, popup=0, clear_selected_on_enable=False, clear_selected_on_click_outside=False)
     def input(key):
         if key == 'space':
             bl.button_dict = {
