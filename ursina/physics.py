@@ -106,7 +106,7 @@ def raycast(origin, direction: Vec3 = Vec3(0, 0, 1), distance=9999,
         hit = True
 
     if debug or physics_handler.show_debug:
-        temp = Entity(position=origin, model=copy(_line_model), scale=Vec3(1, 1, min(distance, 9999)), color=color, add_to_scene_entities=1)
+        temp = Entity(position=origin, model=copy(_line_model), scale=Vec3(1, 1, min(distance, 9999)), color=color, add_to_scene_entities=False)
         temp.look_at(to_pos)
         destroy(temp, delay=1/30)
 
@@ -119,11 +119,11 @@ def raycast(origin, direction: Vec3 = Vec3(0, 0, 1), distance=9999,
     return HitInfo(
         hit=True,
         entity=result.getNode(),
-        point=result.getHitPos(),
-        world_point=result.getHitPos(),
+        point=Vec3(*result.getHitPos()),
+        world_point=Vec3(*result.getHitPos()),
         distance=result.getHitFraction() * distance,
-        normal=result.getHitNormal(),
-        world_normal=result.getHitNormal(),
+        normal=Vec3(*result.getHitNormal()),
+        world_normal=Vec3(*result.getHitNormal()),
         hits=None,
         entities=None
     )
