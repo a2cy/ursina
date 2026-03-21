@@ -9,6 +9,9 @@ from ursina.hit_info import HitInfo
 from ursina.vec3 import Vec3
 from ursina.ursinamath import distance
 
+from pathlib import Path
+from panda3d.core import WindowProperties
+
 
 class Mouse:
     def __init__(self):
@@ -129,6 +132,15 @@ class Mouse:
         if application.base:
             # window.position = window.position
             application.base.win.requestProperties(window)
+
+    @property
+    def texture(self):
+        return self._texture
+    @texture.setter
+    def texture(self, value:Path):      # give full path to .cur file
+        self._texture = value
+        window.setCursorFilename(value)
+        base.win.requestProperties(window)
 
 
     def input(self, key):
@@ -343,7 +355,7 @@ if __name__ == '__main__':
             mouse.locked = not mouse.locked
             print(mouse.velocity)
 
-    Cursor()
+    # Cursor()
     # mouse.visible = False
 
 
