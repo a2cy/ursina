@@ -29,7 +29,7 @@ from ursina.vec3 import Vec3
 from ursina.vec4 import Vec4
 
 _Ursina_instance = None
-_warn_if_ursina_not_instantiated = False # gets set to True after Ursina.__init__() to ensure the correct order.
+_warn_if_ursina_not_instantiated = True # gets set to True after Ursina.__init__() to ensure the correct order.
 
 
 from ursina.scripts.property_generator import generate_properties_for_class
@@ -40,6 +40,7 @@ class Entity(NodePath, metaclass=PostInitCaller):
     rotation_directions = (-1,-1,1)
     default_shader = unlit_with_fog_shader
     ignore_paused = False
+    strict = False
     default_values = {
         'parent':scene,
         'name':'entity', 'enabled':True, 'eternal':False, 'position':Vec3(0,0,0), 'rotation':Vec3(0,0,0), 'scale':Vec3(1,1,1), 'model':None, 'origin':Vec3(0,0,0),
@@ -109,6 +110,8 @@ class Entity(NodePath, metaclass=PostInitCaller):
         self.collider = collider
 
         for key, value in kwargs.items():
+            if Entity.strict and key not in self.attributes + ('input', 'update', 'x', 'y', 'z', 'rotation_x', 'rotation_y', 'rotation_z', 'scale_x', 'scale_y', 'scale_z', 'ignore', 'unlit', 'visible_self', 'alpha', 'wireframe', 'world_parent', 'loose_parent', 'highlight_color', 'shader_input', 'tileset_size', 'tile_coordinate', 'on_click'):
+                raise Exception(f'Invalid input to Entity: {key}')
             setattr(self, key, value)
 
 
@@ -818,6 +821,8 @@ class Entity(NodePath, metaclass=PostInitCaller):
             if not value.compiled:
                 value.compile()
 
+            if self.is_empty():
+                return
             self.setShader(value._shader)
             value.entity = self
 
@@ -958,10 +963,15 @@ class Entity(NodePath, metaclass=PostInitCaller):
     def unlit_setter(self, value):  # set to True to ignore light and not cast shadows
         self._unlit = value
         self.setLightOff(value)
+        self.cast_shadows = not value
+
+
+    def cast_shadows_setter(self, value):
+        self._cast_shadows = value
         if value:
-            self.hide(0b0001)
-        else:
             self.show(0b0001)
+        else:
+            self.hide(0b0001)
 
 
     def billboard_setter(self, value):  # set to True to make this Entity always face the camera.
@@ -1514,7 +1524,6 @@ class Entity(NodePath, metaclass=PostInitCaller):
             self.shader = self.org_shader
             self.texture = self.org_texture
             self.color = self.org_color
-
 
         # return self.animate_color(value, duration=duration, delay=delay, curve=curve, interrupt=interrupt, **kwargs)
 
