@@ -58,6 +58,7 @@ class Text(Entity):
         self.text_nodes = []
         self.images = []
         self.origin = (-.5, .5)
+        self.raw_text = text
 
         self.font = Text.default_font
         self.shader = text_shader
