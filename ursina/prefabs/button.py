@@ -39,7 +39,7 @@ class Button(Entity):
         self.pressed_scale = pressed_scale     # multiplier
         self.highlight_sound = None
         self.pressed_sound = None
-        self.highlight_text_size = highlight_text_size if highlight_text_size is not None else text_size
+        self.highlight_text_size = highlight_text_size
         self.collider = collider
         self.disabled = disabled    # Used for temporary deactivating buttons without making them invisible, and still have collision.
 
@@ -107,7 +107,6 @@ class Button(Entity):
         if value and not hasattr(self, 'icon_entity'):
             self.icon_entity = Entity(parent=self.model, name=f'button_icon_entity_{value}', model='quad', z=-.1, add_to_scene_entities=False)
         self.icon_entity.texture = value
-        longest_side = max(self.icon_entity.texture.width, self.icon_entity.texture.height)
         aspect_ratio = self.icon_entity.texture.width / self.icon_entity.texture.height
         if aspect_ratio == 1:
             return
@@ -184,7 +183,8 @@ class Button(Entity):
                     self.model.setScale(Vec3(self.highlight_scale, self.highlight_scale, 1))
 
             if self.text:
-                self.text_size_setter(self.highlight_text_size, temp=True)
+                if self.highlight_text_size is not None:
+                    self.text_size_setter(self.highlight_text_size, temp=True)
                 self.text_color_setter(self.highlight_text_color, temp=True)
 
             if self.highlight_sound:
@@ -205,7 +205,8 @@ class Button(Entity):
                     self.model.setScale(Vec3(1,1,1))
 
             if self.text:
-                self.text_size_setter(self.text_size, temp=True)
+                if self.highlight_text_size is not None:
+                    self.text_size_setter(self.text_size, temp=True)
                 self.text_color_setter(self.text_color, temp=True)
 
         if hasattr(self, 'tooltip') and self.tooltip:
