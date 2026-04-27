@@ -77,10 +77,12 @@ _line_model = Mesh(vertices=[Vec3(0,0,0), Vec3(0,0,1)], mode='line')
 from ursina.hit_info import HitInfo
 
 def raycast(origin, direction: Vec3 = Vec3(0, 0, 1), distance=9999,
-            traverse_target=None, ignore: list = None, debug=False, color=color.white, return_hit_only=False):
+            traverse_target=scene, ignore: list = None, debug=False, color=color.white, return_hit_only=False):
     world = physics_handler.world
     from_pos = origin
     to_pos = origin + (direction * distance)
+    if traverse_target != scene:
+        raise Exception('ursina.physics.raycast: traverse_target not implemented.')
 
     if not ignore:
         result = world.rayTestClosest(from_pos, to_pos)
@@ -173,7 +175,7 @@ class PhysicsEntity:
         self.world = world
 
         entity_kwargs = {key : value for key, value in kwargs.items() if key not in __class__.rb_reserved_args}
-        self.entity = Entity(add_to_scene_entities=False, **entity_kwargs)
+        self.entity = Entity(**entity_kwargs)
         # self.entity.wireframe = True
 
         # create an rb node next to the entity and reparent the entity to the rb node, since the rb node should control it.
@@ -187,8 +189,8 @@ class PhysicsEntity:
             self.rb = scene.attachNewNode(self.node) # node path
 
 
-        self.rb.setPythonTag('Entity', self.entity)
-        self.hasPythonTag = self.rb.hasPythonTag
+        # self.rb.setPythonTag('Entity', self.entity)
+        # self.hasPythonTag = self.rb.hasPythonTag
 
         self.collider = collider # set collider before resetting entity, since we need to get scale. we can't scale rb nodes
         if kinematic:
@@ -243,8 +245,27 @@ class PhysicsEntity:
                 setattr(self, key, value)
 
     def removeNode(self):   # for destroy() compatibility
-        self.world.removeRigidBody(self.node)
-        self.rb.removeNode()
+        if self.node:
+            self.world.removeRigidBody(self.node)
+
+        # detach nodepath
+        if self.rb and not self.rb.isEmpty():
+            self.rb.detachNode()
+
+        # remove all collision shapes (correct way)
+        for i in reversed(range(self.node.getNumShapes())):
+            self.node.removeShape(self.node.getShape(i))
+        # self.node.clearShapes()
+        # destroy visual entity
+        if self.entity:
+            destroy(self.entity)
+        if self in scene.entities:
+            scene.entities.remove(self)
+
+        self.children.clear()
+        self.scripts.clear()
+        self.animations.clear()
+
 
     def parent_target_getter(self):
         return self.entity
@@ -259,6 +280,7 @@ class PhysicsEntity:
     def parent_setter(self, value):
         self._parent = value
         self.rb.reparentTo(value)
+        self.entity.children.append(self) # to make sure that self gets destroyed when parent gets destroyed
 
     def model_getter(self):
         return self.entity.model
@@ -445,8 +467,11 @@ class PhysicsEntity:
             self._collider = MeshCollider(self.entity.model)
 
         elif value == 'sphere':
-            _bounds = self.entity.model_bounds
-            self._collider = SphereCollider(center=_bounds.center-(_bounds.size), radius=_bounds.size.x/2)
+            if self.model:
+                _bounds = self.entity.model_bounds
+                self._collider = SphereCollider(center=_bounds.center-(_bounds.size), radius=_bounds.size.x/2)
+            else:
+                self._collider = SphereCollider()
 
         if self._collider:
             self.node.addShape(self._collider)
@@ -565,26 +590,25 @@ if __name__ == '__main__':
 
     player = Player(x=10, z=-10)
 
-    Entity = PhysicsEntity
     # Entity(model='cube', color=color.red, collider='box', mass=1)
 
-    ground = Entity(model='cube', origin_y=.5, texture='grass', scale=Vec3(30,1,30), collider='box')
-    cube = Entity(model='cube', texture='white_cube', x=2, y=3, collider='box', color=color.lime, mass=0)
-    cube_with_origin = Entity(model='icosphere', origin=(0,-.5,0), scale=2, x=-1, y=3, z=-3, collider='sphere', color=color.orange, mass=0)
+    ground = PhysicsEntity(model='cube', origin_y=.5, texture='grass', scale=Vec3(30,1,30), collider='box')
+    cube = PhysicsEntity(model='cube', texture='white_cube', x=2, y=3, collider='box', color=color.lime, mass=0)
+    cube_with_origin = PhysicsEntity(model='icosphere', origin=(0,-.5,0), scale=2, x=-1, y=3, z=-3, collider='sphere', color=color.orange, mass=0)
 
-    slope = Entity(model='plane', collider='box', scale=10, x=-8, z=10, rotation_x=-30, y=2, color=color.red)
+    slope = PhysicsEntity(model='plane', collider='box', scale=10, x=-8, z=10, rotation_x=-30, y=2, color=color.red)
 
-    icosphere = Entity(model='icosphere', collider='mesh', scale=4, x=10, z=0, y=2, color=color.violet)
-    icosphere_2 = Entity(model='icosphere', collider='mesh', scale=.5, color=color.green)
+    icosphere = PhysicsEntity(model='icosphere', collider='mesh', scale=4, x=10, z=0, y=2, color=color.violet)
+    icosphere_2 = PhysicsEntity(model='icosphere', collider='mesh', scale=.5, color=color.green)
 
-    e = Entity(z=-2)
-    sphere = Entity(parent=e, model='icosphere', collider='sphere', x=-4, scale=3, color=color.blue, )
-    ground = Entity(model='cube', scale=10, collider='box', x=-8, z=-10, rotation_x=-10, y=-5, color=color.gray, name='ground')
+    e = PhysicsEntity(z=-2)
+    sphere = PhysicsEntity(parent=e, model='icosphere', collider='sphere', x=-4, scale=3, color=color.blue, )
+    ground = PhysicsEntity(model='cube', scale=10, collider='box', x=-8, z=-10, rotation_x=-10, y=-5, color=color.gray, name='ground')
 
     camera.fov = 100
 
-    mover = Entity(model='cube', color=color.red)
-    child = Entity(parent=mover, model='cube', origin_y=-.5, scale=2, collider='box', color=color.pink, x=-1)
+    mover = PhysicsEntity(model='cube', color=color.red)
+    child = PhysicsEntity(parent=mover, model='cube', origin_y=-.5, scale=2, collider='box', color=color.pink, x=-1)
 
     def input(key):
         if key == 't':
