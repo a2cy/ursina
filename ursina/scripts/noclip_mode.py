@@ -20,9 +20,9 @@ class NoclipMode:
 
         if key == 'shift up':
             # assign them back again
-            if hasattr(self.entity, 'update'):
+            if hasattr(self.entity, 'update') and hasattr(self, '_entity_original_update'):
                 self.entity.update = self._entity_original_update
-            if hasattr(self.entity, 'input'):
+            if hasattr(self.entity, 'input') and hasattr(self, '_entity_original_input'):
                 self.entity.input = self._entity_original_input
 
 
