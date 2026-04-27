@@ -77,8 +77,8 @@ def _destroy(entity, force_destroy=False):
 
     entity.removeNode()
 
-    if hasattr(entity.__class__, 'instances') and entity in entity.__class__.instances:
-        entity.__class__.instances.remove(entity)
+    # if hasattr(entity.__class__, 'instances') and entity in entity.__class__.instances:
+    #     entity.__class__.instances.remove(entity)
     #unload texture
     # if hasattr(entity, 'texture') and entity.texture != None:
     #     entity.texture.releaseAll()
