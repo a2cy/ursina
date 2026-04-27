@@ -252,7 +252,7 @@ class Entity(NodePath, metaclass=PostInitCaller):
             self._model = m
 
         elif value is Quad:
-            self._model = Quad(aspect=self.scale.x/self.scale.y, radius=getattr(self, 'radius', .1))
+            self._model = Quad(aspect=self.scale.x/self.scale.y, radius=getattr(self, 'radius', .1), for_button=True)
 
         elif value is NineSlice:
             self._model = NineSlice(entity_scale=self.scale.xy, radius=getattr(self, 'radius', .1))
@@ -298,7 +298,11 @@ class Entity(NodePath, metaclass=PostInitCaller):
         if not application.development_mode:
             return
         if self.is_empty():
-            raise Exception(f'entity has been destroyed by: {getattr(self, 'destroy_source', 'unknown')}')
+            destroy_source =  getattr(self, 'destroy_source', 'unknown')
+            if isinstance(destroy_source, Sequence) and destroy_source.entity:
+                destroy_source = f'Sequence belonging to: {destroy_source.entity}'
+
+            raise Exception(f'entity has been destroyed by: {destroy_source}. Entity name: {self.name}')
 
 
     def double_sided_setter(self, value):
@@ -1501,7 +1505,7 @@ class Entity(NodePath, metaclass=PostInitCaller):
         return self.shake_sequence
 
     def animate_color(self, value, duration=.1, interrupt='finish', unscaled=False, **kwargs):
-        return self.animate('color', value, duration, **kwargs)
+        return self.animate('color', value, duration, unscaled=unscaled, **kwargs)
 
     def fade_out(self, value=0, duration=.5, unscaled=False, **kwargs):
         return self.animate('color', Vec4(self.color[0], self.color[1], self.color[2], value), duration=duration, **kwargs)
