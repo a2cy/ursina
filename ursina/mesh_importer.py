@@ -159,11 +159,12 @@ if application.development_mode:
             application.blender_paths['default'] = blender_exec
 
 
-def load_blender_scene(name, folder:Path=Func(getattr, application, 'asset_folder'), reload=False, skip_hidden=True, models_only=False, uvs=True, vertex_colors=True, normals=True, triangulate=True, decimals=4):
+def load_blender_scene(name, folder:Path=Func(getattr, application, 'asset_folder'), reload=False, skip_hidden=True, models_only=False, uvs=True, vertex_colors=True, normals=True, triangulate=True, decimals=4, scenes_folder='scenes'):
     if callable(folder):
         folder = folder()
 
-    scenes_folder = Path(application.asset_folder / 'scenes')
+
+    scenes_folder = Path(application.asset_folder / 'scenes') if scenes_folder == 'scenes' else scenes_folder
     if not scenes_folder.exists():
         scenes_folder.mkdir()
 
