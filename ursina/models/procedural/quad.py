@@ -11,7 +11,7 @@ class Quad(Mesh):
     _corner_maker = None
     _point_placer = None
 
-    def __new__(cls, radius=.1, segments=8, aspect=1, scale=(1,1), mode='ngon', thickness=1):
+    def __new__(cls, radius=.1, segments=8, aspect=1, scale=(1,1), mode='ngon', thickness=1, for_button=False):
         # special case: plain quad
         if radius == 0 and aspect == 1 and scale == (1, 1) and mode == 'ngon':
             return Mesh(
@@ -34,7 +34,7 @@ class Quad(Mesh):
         cls._cache[key] = instance
         return instance
 
-    def __init__(self, radius=.1, segments=8, aspect=1, scale=(1,1), mode='ngon', thickness=1):
+    def __init__(self, radius=.1, segments=8, aspect=1, scale=(1,1), mode='ngon', thickness=1, for_button=False):
         if hasattr(self, '_initialized'):
             return
         self._initialized = True
@@ -89,6 +89,9 @@ class Quad(Mesh):
         # center mesh
         offset = sum(self.vertices) / len(self.vertices)
         self.vertices = [(v[0] - offset[0], v[1] - offset[1], v[2] - offset[2]) for v in self.vertices]
+
+        if for_button:
+            self.uvs = [Vec2((v[0]*aspect)+.5, v[1]+.5) for v in self.vertices]
 
         if mode == 'line':
             self.vertices.append(self.vertices[0])
