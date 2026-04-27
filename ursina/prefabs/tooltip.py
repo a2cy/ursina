@@ -4,14 +4,12 @@ from ursina import *
 class Tooltip(Text):
 
     def __init__(self, text='', wordwrap=40, background_color=color.black66, background_model_class=Quad, background_radius=.1, padding=.05, **kwargs):
-        super().__init__(text=text, ignore=False, parent=camera.ui, wordwrap=wordwrap, origin=(-.5,-.5), margin=(2,2),
-            background_color=color.inverse(color.text_color), enabled=False)
+        super().__init__(text=text, ignore=False, parent=camera.ui, wordwrap=wordwrap, origin=(-.5,-.5), margin=(2,2), enabled=False)
 
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.create_background(padding=padding, model_class=background_model_class, radius=background_radius, )
-        self.background_entity.color = background_color
+        self.create_background(padding=padding, model_class=background_model_class, radius=background_radius, color=background_color)
         self._width = self.width
 
 
