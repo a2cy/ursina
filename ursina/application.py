@@ -10,14 +10,11 @@ sequences = []
 trace_entity_definition = False # enable to set entity.line_definition
 print_entity_definition = False
 
-package_folder = Path(__file__).parent
-asset_folder = Path(sys.argv[0]).parent
+package_folder = Path(__file__).resolve().parent
+asset_folder = Path(sys.argv[0]).resolve().parent
 blender_paths = dict()
 
-development_mode = True
-dirs = [e.stem for e in asset_folder.parent.iterdir() if e.is_dir()]
-if 'src' in dirs and 'python' in dirs:
-    development_mode = False
+development_mode = not (asset_folder.resolve().parent / '.is_ursina_build').exists() # on builds, add a .is_ursina_build file to the folder so we know it's a build.
 
 window_type = 'onscreen'
 show_ursina_splash = False

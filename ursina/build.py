@@ -39,7 +39,7 @@ class UrsinaBuild:
             build_game=True,
             compile_to_pyc=True,
             make_bat_file=True,
-            entry_point='main.py',
+            entry_point='__main__.py',
             overwrite=False,
             pyproject_path='..',
             python_version='',
@@ -82,6 +82,8 @@ class UrsinaBuild:
             print(f'No python_version specified, using default: {python_version}')
         self.copy_python(builds_folder=builds_folder, build_name=build_name, platform=platform, python_version=python_version, use_cache=use_cache)
         self.copy_modules(builds_folder=builds_folder, build_name=build_name, platform=platform, python_version=python_version, use_cache=use_cache)
+        with open(Path(f'{builds_folder}/{build_name}_{platform}')/'.is_ursina_build', 'w') as f:
+            f.write('# This file is just here to tell ursina this is a build. In builds, application.development_mode is False, which results in things like fps and entity counters being disabled, and the window starting in fullscreen.')
         return self
 
 
@@ -372,7 +374,7 @@ class UrsinaBuild:
             shutil.copy2(f, dest)
 
 
-    def make_bat_file(self, entry_point='main.py', name='launch', builds_folder='builds', build_name='', platform='Windows', is_pyc=False):
+    def make_bat_file(self, entry_point='__main__.py', name='launch', builds_folder='builds', build_name='', platform='Windows', is_pyc=False):
         build_name = build_name if build_name else PROJECT_FOLDER.name
         into = Path(f'{builds_folder}/{build_name}_{platform}/')
 
