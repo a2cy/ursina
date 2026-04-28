@@ -12,23 +12,26 @@ from ursina.vec2 import Vec2
 class Window(WindowProperties):
 
     def _ready(self, title, icon, borderless, fullscreen, size, forced_aspect_ratio, position, vsync, editor_ui_enabled, window_type, render_mode):
-        loadPrcFileData('', 'window-title ursina')
-        loadPrcFileData('', 'notify-level-util error')
+        loadPrcFileData('', f'window-title {title}')
+        loadPrcFileData('', f'undecorated {borderless}')
+        loadPrcFileData('', f'sync-video {vsync}')
+        loadPrcFileData('', 'coordinate-system y-up-left')
         loadPrcFileData('', 'textures-auto-power-2 #t')
+
+        loadPrcFileData('', 'notify-level-util error')
         loadPrcFileData('', 'load-file-type p3assimp')
+
         # loadPrcFileData('', 'allow-portal-cull #t')
         # loadPrcFileData("", "framebuffer-multisample 1")
         # loadPrcFileData('', 'multisamples 2')
         # loadPrcFileData('', 'textures-power-2 none')
         # loadPrcFileData('', 'threading-model Cull/Draw')
-        loadPrcFileData('', 'coordinate-system y-up-left')
         # fallback to one of these if opengl is not supported
         loadPrcFileData('', 'aux-display pandadx9')
         loadPrcFileData('', 'aux-display pandadx8')
         loadPrcFileData('', 'aux-display tinydisplay')
         loadPrcFileData('', 'allow-incomplete-render 1')
 
-        loadPrcFileData('', f'undecorated {borderless}')
         self.title = title
         self.icon = icon
 
@@ -182,7 +185,7 @@ class Window(WindowProperties):
 
         def _entity_counter_update():
             if self.entity_counter.t > 1:
-                self.entity_counter.text = str(max(0, len([e for e in scene.entities if e.model and e.enabled])-5))
+                self.entity_counter.text = str(max(0, len([e for e in scene.entities if e.model and not e.has_disabled_ancestor()])-5))
                 self.entity_counter.i = 0
             self.entity_counter.t += time.dt
         self.entity_counter.update = _entity_counter_update
@@ -526,7 +529,7 @@ if __name__ == '__main__':
         # fullscreen=True,
         # show_ursina_splash=True,
         # development_mode=False,
-        # vsync = True
+        vsync = False,
         )
     button_list = ButtonList(
         {
