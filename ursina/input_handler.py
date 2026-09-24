@@ -118,12 +118,9 @@ def bind(original_key, alternative_key):
     # rebinds[original_key + ' up'] = alternative_key + ' up'
 
 def unbind(key):
-    if key in rebinds:
-        del rebinds[key]
-        del rebinds[key + ' hold']
-        del rebinds[key + ' up']
-    else:
-        rebinds[key] = 'none'
+    for _key in (key, f'{key} hold', f'{key} up'):
+        if _key in rebinds:
+            del rebinds[_key]
 
 
 def rebind(to_key, from_key):
