@@ -120,7 +120,7 @@ def make_command_line_app(cls):
         while i < len(remaining_args):
             token = remaining_args[i]
 
-            if token == '--':
+            if token == '--': # nosec B105
                 # User typed '--' alone — invalid here
                 print(f"Unexpected '--' found while parsing arguments for '{last_method_name}'.")
                 print_valid_method_args(cls, last_method_name)
