@@ -24,13 +24,15 @@ class MainMenu(Entity):
         from hyposolus import apply_rebinds
         apply_rebinds()
         print('...........................', len(input_handler.rebinds))
-        self.options_menu = OptionsMenu(parent=self.menu_parent, enabled=False)
+        self.options_menu = OptionsMenu(parent=camera.ui, enabled=False)
 
         self.state_handler = Animator({
             'main_menu': self.main_menu,
             'load_menu': self.load_menu,
             'options_menu': self.options_menu
         })
+
+        self.options_menu.on_close = Func(setattr, self.state_handler, 'state', 'main_menu')   # so we can get back from the options menu
 
         self.main_menu.buttons = DotDict(
             new = button_class(text='New Game', scale=button_size, on_click=Func(print_on_screen, 'Assign MainMenu().main_menu.buttons.new.on_click', origin=(0,0), position=(0,.1,-1), color=color.red)),

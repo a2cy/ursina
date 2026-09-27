@@ -15,9 +15,9 @@ button_spacing = .05
 
 class OptionsMenu(Entity):
     default_values = dict(parent=camera.ui)
-    def __init__(self, **kwargs):
-        super().__init__(**(__class__.default_values | kwargs))
-
+    def __init__(self, z=-100, on_close:callable=Func(print, 'close'), **kwargs):
+        super().__init__(z=z, **(__class__.default_values | kwargs))
+        self.on_close = on_close
         self.bg = Entity(parent=self, z=.01, scale=Vec2(1.1,.875), color=hsv(0,0,.1))
         self.bg.model = Quad(aspect=self.bg.scale.x/self.bg.scale.y, radius=.01)
         self.accessibility_menu = Entity(parent=self)
@@ -133,8 +133,11 @@ class OptionsMenu(Entity):
                 print('---:', f'input_handler.rebind(\'{field.text}\', \'{name}\')')
             if close_options_menu:
                 self.enabled = False
+                if self.on_close:
+                    self.on_close()
 
-        save_button = Button(parent=self.controls_menu, scale=(.15,.05), color=color.azure, position=(0,-.39), text='Save', on_click=save_keybinds)
+        save_button = Button(parent=self.controls_menu, scale=(.15,.05), color=color.azure, position=(0,-.39), text='Save\n(not yet implemented)', on_click=save_keybinds)
+        back_button = Button(parent=self.controls_menu, scale=(.075,.05), color=color.hsv(0,0,.05,1), position=(-save_button.scale_x,-.39,), text='Back', on_click=save_keybinds)
         # print('rebind_fields:', rebind_fields)
         # if rebind_fields:
         #     grid_layout(rebind_fields, max_x=1, offset=Vec2(-.5,.4), spacing=Vec2(.2,.005))

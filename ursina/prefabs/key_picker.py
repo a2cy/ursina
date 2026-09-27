@@ -88,7 +88,7 @@ class KeyPicker(Entity):
         row_spacing = self.key_height + self.gap.y
 
         self.keyboard = Entity(parent=self, x=-.15, y=.0)
-        center = Entity(parent=self.keyboard, model='quad', color=color.red, scale=.01)
+        # center = Entity(parent=self.keyboard, model='quad', color=color.red, scale=.01)
 
         # main_keyboard
         main_width = self.get_section_width(main_keys)
