@@ -27,8 +27,10 @@ class Audio(Entity):
 
     volume_multiplier = .5  # master volume
 
-    def __init__(self, sound_file_name='', volume=1, pitch=1, balance=0, loop=False, loops=1, autoplay=True, auto_destroy=False, group='sfx', **kwargs):
+    def __init__(self, sound_file_name='', volume=1, pitch=1, balance=0, loop=False, loops=1, autoplay=True, auto_destroy=None, group='sfx', note_pitch=None, **kwargs):
         super().__init__(**kwargs)
+        if auto_destroy is None and autoplay:
+            auto_destroy = True
         # printvar(sound_file_name)
         self.clip = sound_file_name
         self.group = group
@@ -44,7 +46,8 @@ class Audio(Entity):
             self.loops = loops
         self.autoplay = autoplay
         self.auto_destroy = auto_destroy
-
+        if note_pitch:
+            self.note_pitch = note_pitch
 
         if self.autoplay:
             self.play()
