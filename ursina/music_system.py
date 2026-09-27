@@ -21,7 +21,7 @@ def _load_audio(track_name, audio_group='music'):
     return audio_instance
 
 
-def play(track_name, fade_out_duration=2, start=0, track_group:Literal['music','ambiance']='music'):
+def play(track_name, fade_out_duration=2, start=0, volume=1, track_group:Literal['music','ambiance']='music'):
     global current_music_track, current_ambiance_track, prev_music_track, prev_ambiance_track
 
     if track_group == 'music':
@@ -58,7 +58,7 @@ def play(track_name, fade_out_duration=2, start=0, track_group:Literal['music','
 
     if not prev_track:  # if no music/ambiance playing, start immediately
         tracks[current_track].play(start)
-        tracks[current_track].volume = 1
+        tracks[current_track].volume = volume
         return
 
     # fade out prev track and play new one after
@@ -74,8 +74,8 @@ def play(track_name, fade_out_duration=2, start=0, track_group:Literal['music','
         tracks[current_track].fade_in(duration=fade_out_duration, curve=curve.linear, ignore_paused=True)
 
 
-def play_ambiance(track_name, fade_out_duration=2, start=0):
-    play(track_name, fade_out_duration, start, track_group='ambiance')
+def play_ambiance(track_name, fade_out_duration=2, start=0, volume=1):
+    play(track_name, fade_out_duration, start, volume, track_group='ambiance')
 
 
 if __name__ == '__main__':
