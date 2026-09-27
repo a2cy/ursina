@@ -345,6 +345,8 @@ class PhysicsEntity:
     def world_quaternion_setter(self, value):
         self.entity.world_quaternion = value
 
+    def rotation_x_getter(self):
+        return self.rotation.x
     def rotation_x_setter(self, value):
         new_value = self.rotation
         new_value[0] = value
@@ -355,6 +357,8 @@ class PhysicsEntity:
         new_value = self.rotation
         new_value[1] = value
         self.rotation = new_value
+    def rotation_z_getter(self):
+        return self.rotation.z
     def rotation_z_setter(self, value):
         new_value = self.rotation
         new_value[2] = value
